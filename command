@@ -1,3 +1,5 @@
+cd alx
+
 cp /usr/src/linux-headers-`uname -r`/.config ./
 
 cp /usr/src/linux-headers-$(uname -r)/Module.symvers ./
