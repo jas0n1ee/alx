@@ -1,4 +1,4 @@
-cd alx
+cd ~/alx
 
 cp /usr/src/linux-headers-`uname -r`/.config ./
 
