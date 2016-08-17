@@ -51,6 +51,19 @@
 
 const char alx_drv_name[] = "alx";
 
+/**
+*      skb_reserve - adjust headroom
+*      @skb: buffer to alter
+*      @len: bytes to move
+*
+*      Increase the headroom of an empty &sk_buff by reducing the tail
+*      room. This is only allowed for an empty buffer.
+*/
+static inline void skb_reserve(struct sk_buff *skb, int len)
+{
+	skb->data += len;
+	skb->tail += len;
+}
 
 static void alx_free_txbuf(struct alx_priv *alx, int entry)
 {
@@ -76,7 +89,7 @@ static struct sk_buff *alx_alloc_skb(struct alx_priv *alx, gfp_t gfp)
 	struct page *page;
 
 	if (alx->rx_frag_size > PAGE_SIZE)
-		return __netdev_alloc_skb(alx->dev, alx->rxbuf_size, gfp);
+		return __netdev_alloc_skb(alx->dev, alx->rxbuf_size + 64, gfp);
 
 	page = alx->rx_page;
 	if (!page) {
@@ -117,9 +130,23 @@ static int alx_refill_rx_ring(struct alx_priv *alx, gfp_t gfp)
 		skb = alx_alloc_skb(alx, gfp);
 		if (!skb)
 			break;
+		
+		/*
+		 * When DMA RX address is set to something like
+		 * 0x....fc0, it will be very likely to cause DMA
+		 * RFD overflow issue.
+		 *
+		 * To work around it, we apply rx skb with 64 bytes
+		 * longer space, and offset the address whenever
+		 * 0x....fc0 is detected.
+		 */
+ 		if (((unsigned long)skb->data & 0xfff) == 0xfc0)
+			skb_reserve(skb, 64);
+		
 		dma = dma_map_single(&alx->hw.pdev->dev,
 				     skb->data, alx->rxbuf_size,
 				     DMA_FROM_DEVICE);
+				     
 		if (dma_mapping_error(&alx->hw.pdev->dev, dma)) {
 			dev_kfree_skb(skb);
 			break;
