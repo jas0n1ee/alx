@@ -59,11 +59,11 @@ const char alx_drv_name[] = "alx";
 *      Increase the headroom of an empty &sk_buff by reducing the tail
 *      room. This is only allowed for an empty buffer.
 */
-static inline void skb_reserve(struct sk_buff *skb, int len)
-{
-	skb->data += len;
-	skb->tail += len;
-}
+// static inline void skb_reserve(struct sk_buff *skb, int len)
+// {
+// 	skb->data += len;
+// 	skb->tail += len;
+// }
 
 static void alx_free_txbuf(struct alx_priv *alx, int entry)
 {
@@ -1610,6 +1610,7 @@ static const struct pci_device_id alx_pci_tbl[] = {
 	{ PCI_VDEVICE(ATTANSIC, ALX_DEV_ID_AR8162),
 	  .driver_data = ALX_DEV_QUIRK_MSI_INTX_DISABLE_BUG },
 	{ PCI_VDEVICE(ATTANSIC, ALX_DEV_ID_AR8171) },
+	{ PCI_VDEVICE(ATTANSIC, ALX_DEV_ID_E2500) },
 	{ PCI_VDEVICE(ATTANSIC, ALX_DEV_ID_AR8172) },
 	{}
 };
